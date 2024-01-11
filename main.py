@@ -4,10 +4,6 @@ import asyncio
 import json
 
 
-def show_json(obj):
-    print(json.loads(obj.model_dump_json()))
-
-
 def analyze_10k(company_name):
     pass
 
