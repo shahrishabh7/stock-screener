@@ -14,18 +14,21 @@ class Screener:
         self.ticker_to_cik = {}
 
         # create request header
-        headers = {'User-Agent': "email@address.com"}
+        self.headers = {'User-Agent': "email@address.com"}
 
         # get all companies data
         company_tickers = requests.get(
             "https://www.sec.gov/files/company_tickers.json",
-            headers=headers
+            headers=self.headers
         )
         # review response / keys
         company_ticker_data = company_tickers.json()
         for key in company_ticker_data.keys():
             company = company_ticker_data[key]
-            self.ticker_to_cik[company['ticker']] = company['cik_str']
+            cik_str = str(company['cik_str'])
+            cik_len = len(cik_str)
+            leading_zeros = (10 - cik_len) * "0"
+            self.ticker_to_cik[company['ticker']] = leading_zeros + str(cik_str)
         
         print("...retrieved company data...")
 
@@ -36,17 +39,20 @@ class Screener:
         """
         
         # get company specific filing metadata
-        # filingMetadata = requests.get(
-        #     f'https://data.sec.gov/submissions/CIK{cik}.json',
-        #     headers=headers
-        # )
+        assert company_ticker in self.ticker_to_cik, "TICKER DOESNT EXIST"
+        cik = self.ticker_to_cik[company_ticker]
+        print(cik)
+        filing_metadata = requests.get(
+            f'https://data.sec.gov/submissions/CIK{cik}.json',
+            headers=self.headers
+        )
+        filings = filing_metadata.json()
 
-        # # review json 
-        # print(filingMetadata.json().keys())
-        # filingMetadata.json()['filings']
-        # filingMetadata.json()['filings'].keys()
-        # filingMetadata.json()['filings']['recent']
-        # filingMetadata.json()['filings']['recent'].keys()
+        
+        # review json 
+        print(filings.keys())
+        print(filings['filings'].keys())
+        print(filings['filings']['recent'].keys())
 
         # # dictionary to dataframe
         # allForms = pd.DataFrame.from_dict(
@@ -64,13 +70,12 @@ class Screener:
 
 
 async def main():
+    screener = Screener()
     while True:
         user_input = input("Enter company ticker: ")
         if user_input.lower() == 'exit':
             break
     
-        screener = Screener()
-
         filings_analysis = screener.analyze_10k(user_input)
         market_analysis = screener.synthesize_market_news(user_input)
         competitor_analysis = screener.analyze_competitors(user_input)
