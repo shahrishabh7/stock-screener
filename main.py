@@ -30,7 +30,7 @@ class Screener:
         print("...retrieved company data...")
 
 
-    def analyze_10k(company_ticker):
+    def analyze_10k(self, company_ticker):
         """
         get SEC filings from EDGAR, start with 10k
         """
@@ -55,11 +55,11 @@ class Screener:
 
 
 
-    def synthesize_market_news(company_name):
+    def synthesize_market_news(self, company_name):
         pass
 
 
-    def analyze_competitors(company_name):
+    def analyze_competitors(self, company_name):
         pass
 
 
