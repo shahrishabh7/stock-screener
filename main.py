@@ -54,12 +54,7 @@ class Screener:
         print(filings['filings'].keys())
         print(filings['filings']['recent'].keys())
 
-        # # dictionary to dataframe
-        # allForms = pd.DataFrame.from_dict(
-        #     filingMetadata.json()['filings']['recent']
-        # )
-
-
+        # dictionary to dataframe
 
     def synthesize_market_news(self, company_name):
         pass
