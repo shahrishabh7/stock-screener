@@ -71,10 +71,10 @@ class Screener:
         print(sec_link_10k)
         bs_scraper = BeautifulSoupService(sec_link_10k)
         sec_10k_page_content = await bs_scraper.get_text_from_sec_html()
-        print(sec_10k_page_content)
+        # print(sec_10k_page_content)
         open_ai = OpenAIService()
         prompt = ""
-        open_ai.completion(prompt)
+        # open_ai_resp = await open_ai.completion(prompt)
 
     def synthesize_market_news(self, company_name):
         pass

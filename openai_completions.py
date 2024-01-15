@@ -2,7 +2,7 @@ from typing import Any, Optional
 import requests
 import os
 
-from openai_completions import OpenAI
+from openai import OpenAI
 from pydantic import BaseModel
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')

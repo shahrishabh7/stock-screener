@@ -1,9 +1,11 @@
 import re
+import os
 from typing import List
 import requests
 from bs4 import BeautifulSoup
 from anthropicService import ClaudeService, HumanAssistantPrompt
 from dotenv import load_dotenv
+import pdfkit
 
 load_dotenv()
 
@@ -13,11 +15,19 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 class BeautifulSoupService:
     def __init__(self, url: str):
         self.headers = {'User-Agent': "rohith.mandavilli@gmail.com"}
+        self.pdf_path = "10k.pdf"
         page = requests.get(url, headers=self.headers)
         assert page.status_code, 200
         self.page_content = page.content
         self.html = BeautifulSoup(self.page_content, "html.parser")
         self.claude = ClaudeService(api_key=ANTHROPIC_API_KEY)
+
+        try:
+            # need to run brew install Caskroom/cask/wkhtmltopdf to use successfully
+            pdfkit.from_url(url, self.pdf_path)
+            print(f"PDF generated and saved at {self.pdf_path}")
+        except Exception as e:
+            print(f"PDF generation failed: {e}")
 
     async def get_page_content(self) -> str:
         pgraphs = await self.get_article_from_html()
