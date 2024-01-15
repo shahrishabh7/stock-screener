@@ -69,7 +69,7 @@ class Screener:
         sec_link_10k = f'https://www.sec.gov/Archives/edgar/data/{cik}/{most_recent_10k["accessionNumber"].replace("-", "")}/{most_recent_10k["primaryDocument"]}'
         print(sec_link_10k)
         bs_scraper = BeautifulSoupService(sec_link_10k)
-        sec_10k_page_content = await bs_scraper.get_article_from_html(sec_link_10k)
+        sec_10k_page_content = await bs_scraper.get_article_from_html()
         print(sec_10k_page_content)
 
         # latest_10k_data = latest_10k_data_response.json()
