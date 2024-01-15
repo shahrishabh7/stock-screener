@@ -6,6 +6,8 @@ import json
 import requests
 import pandas as pd
 
+from beautifulsoup import BeautifulSoupService
+
 
 class Screener:
     
@@ -33,7 +35,7 @@ class Screener:
         print("...retrieved company data...")
 
 
-    def analyze_10k(self, company_ticker):
+    async def analyze_10k(self, company_ticker):
         """
         get SEC filings from EDGAR, start with 10k
         """
@@ -41,19 +43,45 @@ class Screener:
         # get company specific filing metadata
         assert company_ticker in self.ticker_to_cik, "TICKER DOESNT EXIST"
         cik = self.ticker_to_cik[company_ticker]
-        filing_metadata = requests.get(
+        filing_metadata_response = requests.get(
             f'https://data.sec.gov/submissions/CIK{cik}.json',
             headers=self.headers
         )
-        filings = filing_metadata.json()
+        assert filing_metadata_response.status_code, 200
+        filings = filing_metadata_response.json()
 
         
         # review json 
         print(filings.keys())
         print(filings['filings'].keys())
         print(filings['filings']['recent'].keys())
+        # dict_keys(['cik', 'entityType', 'sic', 'sicDescription', 'insiderTransactionForOwnerExists', 'insiderTransactionForIssuerExists', 'name', 'tickers', 'exchanges', 'ein', 'description', 'website', 'investorWebsite', 'category', 'fiscalYearEnd', 'stateOfIncorporation', 'stateOfIncorporationDescription', 'addresses', 'phone', 'flags', 'formerNames', 'filings'])
+        # dict_keys(['recent', 'files'])
+        # dict_keys(['accessionNumber', 'filingDate', 'reportDate', 'acceptanceDateTime', 'act', 'form', 'fileNumber', 'filmNumber', 'items', 'size', 'isXBRL', 'isInlineXBRL', 'primaryDocument', 'primaryDocDescription'])
+        forms = pd.DataFrame.from_dict(filings['filings']['recent'])
+        most_recent_10k = None
+        for index, row in forms.iterrows():
+            if row['form'] == "10-K":
+                print(row)
+                most_recent_10k = row
+                break
+
+        assert most_recent_10k is not None
+        # https://www.sec.gov/Archives/edgar/data/1321655/000132165523000011/pltr-20221231.htm
+        print(most_recent_10k)
+        sec_link_10k = f'https://www.sec.gov/Archives/edgar/data/{cik}/{most_recent_10k["accessionNumber"].replace("-", "")}/{most_recent_10k["primaryDocument"]}'
+        print(sec_link_10k)
+        bs_scraper = BeautifulSoupService(sec_link_10k)
+        sec_10k_page_content = await bs_scraper.get_page_content(sec_link_10k)
+        print(sec_10k_page_content)
+
+        # latest_10k_data = latest_10k_data_response.json()
+        # print(latest_10k_data)
 
         # dictionary to dataframe
+        # for key in print(filings['filings']['recent']['form']):
+        #     print(key)
+            # print(filings['filings'][key])
 
     def synthesize_market_news(self, company_name):
         pass
@@ -70,7 +98,7 @@ async def main():
         if user_input.lower() == 'exit':
             break
     
-        filings_analysis = screener.analyze_10k(user_input)
+        filings_analysis = await screener.analyze_10k(user_input)
         market_analysis = screener.synthesize_market_news(user_input)
         competitor_analysis = screener.analyze_competitors(user_input)
 

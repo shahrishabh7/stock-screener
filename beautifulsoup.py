@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-from anthropic import ClaudeService, HumanAssistantPrompt
+from anthropicService import ClaudeService, HumanAssistantPrompt
 
 
 class BeautifulSoupService:
@@ -11,6 +11,7 @@ class BeautifulSoupService:
     async def get_page_content(self, url: str) -> str:
         page = requests.get(url)
         if page.status_code != 200:
+            # self.scraper doesnt exist
             page = self.scraper.get(url)
 
         html = BeautifulSoup(page.content, "html.parser")
@@ -30,12 +31,14 @@ class BeautifulSoupService:
         if len(line_nums) == 0:
             return ""
 
+        # this function needs to be implemented
         content = self.extract_content_from_line_nums(pgraphs, line_nums)
         return "\n".join(content)
 
-    def get_article_from_html(self) -> str:
+    async def get_article_from_html(self) -> str:
         elements = []
         processed_lists = set()
+        # find_all isnt a valid call?
         for p in self.html.find_all("p"):
             elements.append(p)
             next_sibling = p.find_next_sibling(["ul", "ol"])
