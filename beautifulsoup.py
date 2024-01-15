@@ -38,7 +38,6 @@ class BeautifulSoupService:
         if len(line_nums) == 0:
             return ""
 
-        # this function needs to be implemented
         content = self.extract_content_from_line_nums(pgraphs, line_nums)
         return "\n".join(content)
 
