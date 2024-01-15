@@ -2,18 +2,26 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from anthropicService import ClaudeService, HumanAssistantPrompt
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 
 class BeautifulSoupService:
     def __init__(self, html):
         self.html = html
+        self.claude = ClaudeService(api_key=ANTHROPIC_API_KEY)
 
     async def get_page_content(self, url: str) -> str:
         page = requests.get(url)
         assert page.status_code, 200
 
         self.html = BeautifulSoup(page.content, "html.parser")
-        pgraphs = self.get_article_from_html()
+        pgraphs = await self.get_article_from_html()
 
         prompt = HumanAssistantPrompt(
             human_prompt=f"Below is a numbered list of the text in all the <p> and <li> tags on a web page: {pgraphs} Within this list, some lines may not be relevant to the primary content of the page (e.g. footer text, advertisements, etc.). Please identify the range of line numbers that correspond to the main article's content (i.e. article's paragraphs). Your response should only mention the range of line numbers, for example: 'lines 5-25'.",
