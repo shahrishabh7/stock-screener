@@ -32,8 +32,7 @@ class Screener:
             cik_str = str(company['cik_str'])
             cik_len = len(cik_str)
             leading_zeros = (10 - cik_len) * "0"
-            self.ticker_to_cik[company['ticker']
-                               ] = leading_zeros + str(cik_str)
+            self.ticker_to_cik[company['ticker']] = leading_zeros + str(cik_str)
 
         print("...retrieved company data...")
 
