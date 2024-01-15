@@ -1,4 +1,5 @@
 import re
+from typing import List
 import requests
 from bs4 import BeautifulSoup
 from anthropicService import ClaudeService, HumanAssistantPrompt
@@ -63,3 +64,22 @@ class BeautifulSoupService:
             formatted_elements.append(f"{prefix}{text}")
 
         return "\n".join(formatted_elements)
+
+    @staticmethod
+    def extract_content_from_line_nums(self, pgraphs: str, line_nums: str) -> List[str]:
+        pgraph_elements = pgraphs.split("\n")
+        content = []
+        for line_num in line_nums.split(","):
+            if "-" in line_num:
+                start, end = self.extract_initial_line_numbers(line_num)
+                if start and end:
+                    for i in range(start, min(end + 1, len(pgraph_elements) + 1)):
+                        text = ".".join(
+                            pgraph_elements[i - 1].split(".")[1:]).strip()
+                        content.append(text)
+            elif line_num.isdigit():
+                text = ".".join(
+                    pgraph_elements[int(line_num) - 1].split(".")[1:]
+                ).strip()
+                content.append(text)
+        return content
