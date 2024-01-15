@@ -1,17 +1,19 @@
 from typing import Any, Optional
 import requests
+import os
 
 from openai_completions import OpenAI
 from pydantic import BaseModel
 
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 class OpenAIService:
-    def __init__(self, api_key: Optional[str], model: str = "gpt-3.5-turbo"):
+    def __init__(self, model: str = "gpt-3.5-turbo"):
         self.client = OpenAI()
         self.model = model
         self.headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
+            "Authorization": f"Bearer {OPENAI_API_KEY}"
         }
 
     async def completion(

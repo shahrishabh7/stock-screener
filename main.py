@@ -7,6 +7,7 @@ import requests
 import pandas as pd
 
 from beautifulsoup import BeautifulSoupService
+from openai_completions import OpenAIService
 
 
 class Screener:
@@ -71,7 +72,9 @@ class Screener:
         bs_scraper = BeautifulSoupService(sec_link_10k)
         sec_10k_page_content = await bs_scraper.get_text_from_sec_html()
         print(sec_10k_page_content)
-        
+        open_ai = OpenAIService()
+        prompt = ""
+        open_ai.completion(prompt)
 
     def synthesize_market_news(self, company_name):
         pass

@@ -3,12 +3,10 @@ from typing import List
 import requests
 from bs4 import BeautifulSoup
 from anthropicService import ClaudeService, HumanAssistantPrompt
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 
@@ -50,7 +48,7 @@ class BeautifulSoupService:
             elements.append(span)
 
         if not elements:
-            return "No <span>  or <table> tags found on page"
+            return "No <span> tags found on page"
         
         formatted_elements = []
         for i, element in enumerate(elements):
