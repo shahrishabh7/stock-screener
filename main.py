@@ -7,11 +7,13 @@ import requests
 import pandas as pd
 
 from beautifulsoup import BeautifulSoupService
+from serp import SerpService
 
 
 class Screener:
 
     def __init__(self):
+        self.serper = SerpService(os.environ.get("SERP_KEY"))
         self.ticker_to_cik = {}
 
         # create request header
@@ -81,7 +83,7 @@ class Screener:
         # print(filings['filings'][key])
 
     def synthesize_market_news(self, company_name):
-        pass
+        self.serper.search(company_name + " market news")
 
     def analyze_competitors(self, company_name):
         pass
