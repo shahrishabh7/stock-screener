@@ -12,7 +12,8 @@ class BeautifulSoupService:
         page = requests.get(url)
         if page.status_code != 200:
             # self.scraper doesnt exist
-            page = self.scraper.get(url)
+            # page = self.scraper.get(url)
+            page = requests.get(url)
 
         html = BeautifulSoup(page.content, "html.parser")
         pgraphs = self.get_article_from_html(html)
