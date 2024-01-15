@@ -10,8 +10,7 @@ from beautifulsoup import BeautifulSoupService
 
 
 class Screener:
-    
-    
+
     def __init__(self):
         self.ticker_to_cik = {}
 
@@ -30,16 +29,16 @@ class Screener:
             cik_str = str(company['cik_str'])
             cik_len = len(cik_str)
             leading_zeros = (10 - cik_len) * "0"
-            self.ticker_to_cik[company['ticker']] = leading_zeros + str(cik_str)
-        
+            self.ticker_to_cik[company['ticker']
+                               ] = leading_zeros + str(cik_str)
+
         print("...retrieved company data...")
 
-
-    async def analyze_10k(self, company_ticker):
+    def analyze_10k(self, company_ticker):
         """
         get SEC filings from EDGAR, start with 10k
         """
-        
+
         # get company specific filing metadata
         assert company_ticker in self.ticker_to_cik, "TICKER DOESNT EXIST"
         cik = self.ticker_to_cik[company_ticker]
@@ -47,11 +46,9 @@ class Screener:
             f'https://data.sec.gov/submissions/CIK{cik}.json',
             headers=self.headers
         )
-        assert filing_metadata_response.status_code, 200
-        filings = filing_metadata_response.json()
+        filings = filing_metadata.json()
 
-        
-        # review json 
+        # review json
         print(filings.keys())
         print(filings['filings'].keys())
         print(filings['filings']['recent'].keys())
@@ -81,11 +78,10 @@ class Screener:
         # dictionary to dataframe
         # for key in print(filings['filings']['recent']['form']):
         #     print(key)
-            # print(filings['filings'][key])
+        # print(filings['filings'][key])
 
     def synthesize_market_news(self, company_name):
         pass
-
 
     def analyze_competitors(self, company_name):
         pass
@@ -97,7 +93,7 @@ async def main():
         user_input = input("Enter company ticker: ")
         if user_input.lower() == 'exit':
             break
-    
+
         filings_analysis = await screener.analyze_10k(user_input)
         market_analysis = screener.synthesize_market_news(user_input)
         competitor_analysis = screener.analyze_competitors(user_input)
