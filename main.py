@@ -41,7 +41,6 @@ class Screener:
         # get company specific filing metadata
         assert company_ticker in self.ticker_to_cik, "TICKER DOESNT EXIST"
         cik = self.ticker_to_cik[company_ticker]
-        print(cik)
         filing_metadata = requests.get(
             f'https://data.sec.gov/submissions/CIK{cik}.json',
             headers=self.headers
