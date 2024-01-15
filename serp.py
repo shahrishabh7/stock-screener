@@ -1,25 +1,23 @@
 from typing import Optional, Any, Dict
-
-import requests
+from serpapi import search as GoogleSearch
 
 
 class SerpService:
-    def __init__(self, api_key: Optional[str]):
+    def __init__(self, api_key: Optional[str], engine: str = "google_news"):
+        self.url = "https://serpapi.com/search"
         self.api_key = api_key
+        self.params = {
+            "api_key": {api_key},
+            "gl": "us",
+        }
+        if engine:
+            self.params["engine"] = engine
 
     def search(self, query: str) -> Dict[str, Any]:
         if not self.api_key:
             raise ValueError("No API key provided")
 
-        response = requests.post(
-            f"https://google.serper.dev/search",
-            headers={
-                "X-API-KEY": self.api_key,
-                "Content-Type": "application/json",
-            },
-            params={
-                "q": query,
-            },
-        )
-        response.raise_for_status()
-        return response.json()
+        self.params["q"] = query
+        search = GoogleSearch(self.params)
+        results = search.as_dict()
+        return results
