@@ -3,18 +3,24 @@ from typing import List
 import requests
 from bs4 import BeautifulSoup
 from anthropicService import ClaudeService, HumanAssistantPrompt
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 
 class BeautifulSoupService:
-    def __init__(self, html):
-        self.html = html
-
-    async def get_page_content(self, url: str) -> str:
-        page = requests.get(url)
+    def __init__(self, url: str):
+        self.headers = {'User-Agent': "rohith.mandavilli@gmail.com"}
+        page = requests.get(url, headers=self.headers)
         assert page.status_code, 200
+        self.page_content = page.content
+        self.html = BeautifulSoup(self.page_content, "html.parser")
+        self.claude = ClaudeService(api_key=ANTHROPIC_API_KEY)
 
-        self.html = BeautifulSoup(page.content, "html.parser")
-        pgraphs = self.get_article_from_html()
+    async def get_page_content(self) -> str:
+        pgraphs = await self.get_article_from_html()
 
         prompt = HumanAssistantPrompt(
             human_prompt=f"Below is a numbered list of the text in all the <p> and <li> tags on a web page: {pgraphs} Within this list, some lines may not be relevant to the primary content of the page (e.g. footer text, advertisements, etc.). Please identify the range of line numbers that correspond to the main article's content (i.e. article's paragraphs). Your response should only mention the range of line numbers, for example: 'lines 5-25'.",
@@ -30,9 +36,46 @@ class BeautifulSoupService:
         if len(line_nums) == 0:
             return ""
 
-        # this function needs to be implemented
         content = self.extract_content_from_line_nums(pgraphs, line_nums)
         return "\n".join(content)
+
+    async def get_text_from_sec_html(self) -> str:
+        elements = []
+        
+        for span in self.html.find_all("span"):
+            if span.find_parent("table"):
+                continue
+            elements.append(span)
+
+        if not elements:
+            return "No <span> tags found on page"
+        
+        formatted_elements = []
+        for i, element in enumerate(elements):
+            # remove extra whitespaces \s+ matches multiple spaces in a row
+            text = re.sub(r"\s+", " ", element.text).strip()
+            prefix = f"{i + 1}. "
+            formatted_elements.append(f"{prefix}{text}")
+
+        return "\n".join(formatted_elements)
+    
+    async def get_tables_from_sec_html(self) -> str:
+        table_elements = []
+
+        for table in self.html.find_all("table"):
+            table_elements.append(table)
+        
+        if not table_elements:
+            return "No <table> tags found on page"
+    
+        formatted_elements = []
+        for i, element in enumerate(table_elements):
+            # remove extra whitespaces \s+ matches multiple spaces in a row
+            text = re.sub(r"\s+", " ", element.text).strip()
+            prefix = f"{i + 1}. "
+            formatted_elements.append(f"{prefix}{text}")
+
+        return "\n".join(formatted_elements)
 
     async def get_article_from_html(self) -> str:
         elements = []

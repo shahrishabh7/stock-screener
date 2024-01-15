@@ -8,6 +8,7 @@ import pandas as pd
 
 from beautifulsoup import BeautifulSoupService
 from serp import SerpService
+from openai_completions import OpenAIService
 
 
 class Screener:
@@ -17,7 +18,7 @@ class Screener:
         self.ticker_to_cik = {}
 
         # create request header
-        self.headers = {'User-Agent': "email@address.com"}
+        self.headers = {'User-Agent': "rohith.mandavilli@gmail.com"}
 
         # get all companies data
         company_tickers = requests.get(
@@ -36,7 +37,7 @@ class Screener:
 
         print("...retrieved company data...")
 
-    def analyze_10k(self, company_ticker):
+    async def analyze_10k(self, company_ticker):
         """
         get SEC filings from EDGAR, start with 10k
         """
@@ -48,7 +49,7 @@ class Screener:
             f'https://data.sec.gov/submissions/CIK{cik}.json',
             headers=self.headers
         )
-        filings = filing_metadata.json()
+        filings = filing_metadata_response.json()
 
         # review json
         print(filings.keys())
@@ -71,16 +72,11 @@ class Screener:
         sec_link_10k = f'https://www.sec.gov/Archives/edgar/data/{cik}/{most_recent_10k["accessionNumber"].replace("-", "")}/{most_recent_10k["primaryDocument"]}'
         print(sec_link_10k)
         bs_scraper = BeautifulSoupService(sec_link_10k)
-        sec_10k_page_content = await bs_scraper.get_page_content(sec_link_10k)
+        sec_10k_page_content = await bs_scraper.get_text_from_sec_html()
         print(sec_10k_page_content)
-
-        # latest_10k_data = latest_10k_data_response.json()
-        # print(latest_10k_data)
-
-        # dictionary to dataframe
-        # for key in print(filings['filings']['recent']['form']):
-        #     print(key)
-        # print(filings['filings'][key])
+        open_ai = OpenAIService()
+        prompt = ""
+        open_ai.completion(prompt)
 
     def synthesize_market_news(self, company_name):
         self.serper.search(company_name + " market news")
