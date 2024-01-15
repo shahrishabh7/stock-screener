@@ -13,15 +13,14 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 
 class BeautifulSoupService:
-    def __init__(self, html):
-        self.html = html
-        self.claude = ClaudeService(api_key=ANTHROPIC_API_KEY)
-
-    async def get_page_content(self, url: str) -> str:
+    def __init__(self, url: str):
         page = requests.get(url)
         assert page.status_code, 200
+        self.page_content = page.content
+        self.html = BeautifulSoup(self.page_content, "html.parser")
+        self.claude = ClaudeService(api_key=ANTHROPIC_API_KEY)
 
-        self.html = BeautifulSoup(page.content, "html.parser")
+    async def get_page_content(self) -> str:
         pgraphs = await self.get_article_from_html()
 
         prompt = HumanAssistantPrompt(
