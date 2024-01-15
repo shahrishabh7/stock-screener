@@ -34,7 +34,7 @@ class Screener:
 
         print("...retrieved company data...")
 
-    def analyze_10k(self, company_ticker):
+    async def analyze_10k(self, company_ticker):
         """
         get SEC filings from EDGAR, start with 10k
         """
