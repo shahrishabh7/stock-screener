@@ -46,7 +46,7 @@ class Screener:
             f'https://data.sec.gov/submissions/CIK{cik}.json',
             headers=self.headers
         )
-        filings = filing_metadata.json()
+        filings = filing_metadata_response.json()
 
         # review json
         print(filings.keys())
