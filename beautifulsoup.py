@@ -16,15 +16,17 @@ class BeautifulSoupService:
     def __init__(self, url: str):
         self.headers = {'User-Agent': "rohith.mandavilli@gmail.com"}
         self.pdf_path = "10k.pdf"
+        self.url = url
         page = requests.get(url, headers=self.headers)
         assert page.status_code, 200
         self.page_content = page.content
         self.html = BeautifulSoup(self.page_content, "html.parser")
         self.claude = ClaudeService(api_key=ANTHROPIC_API_KEY)
 
+    async def generate_pdf(self) -> None:
         try:
             # need to run brew install Caskroom/cask/wkhtmltopdf to use successfully
-            pdfkit.from_url(url, self.pdf_path)
+            pdfkit.from_url(self.url, self.pdf_path)
             print(f"PDF generated and saved at {self.pdf_path}")
         except Exception as e:
             print(f"PDF generation failed: {e}")

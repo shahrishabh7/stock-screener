@@ -70,8 +70,10 @@ class Screener:
         print(most_recent_10k)
         sec_link_10k = f'https://www.sec.gov/Archives/edgar/data/{cik}/{most_recent_10k["accessionNumber"].replace("-", "")}/{most_recent_10k["primaryDocument"]}'
         print(sec_link_10k)
-        bs_scraper = BeautifulSoupService(sec_link_10k)
-        sec_10k_page_content = await bs_scraper.get_text_from_sec_html()
+        
+        # 
+        bs = BeautifulSoupService(sec_link_10k)
+        await bs.generate_pdf()
         # print(sec_10k_page_content)
         open_ai = OpenAIService()
         prompt = ""
