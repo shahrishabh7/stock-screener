@@ -13,15 +13,19 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 
 class BeautifulSoupService:
-    def __init__(self, url: str):
+    def __init__(self, url: str, generate_content: bool =  False):
         self.headers = {'User-Agent': "rohith.mandavilli@gmail.com"}
         self.pdf_path = "10k.pdf"
         self.url = url
-        page = requests.get(url, headers=self.headers)
-        assert page.status_code, 200
-        self.page_content = page.content
-        self.html = BeautifulSoup(self.page_content, "html.parser")
+        self.page_content = None
+        self.html = None
         self.claude = ClaudeService(api_key=ANTHROPIC_API_KEY)
+
+        if generate_content:
+            page = requests.get(url, headers=self.headers)
+            assert page.status_code, 200
+            self.page_content = page.content
+            self.html = BeautifulSoup(self.page_content, "html.parser")
 
     async def generate_pdf(self) -> None:
         try:
