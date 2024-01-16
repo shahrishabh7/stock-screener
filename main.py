@@ -8,12 +8,14 @@ import pandas as pd
 
 from beautifulsoup import BeautifulSoupService
 from serp import SerpService
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class Screener:
 
     def __init__(self):
-        self.serper = SerpService(os.environ.get("SERP_KEY"))
+        self.serper = SerpService('')
         self.ticker_to_cik = {}
 
         # create request header
@@ -36,7 +38,7 @@ class Screener:
 
         print("...retrieved company data...")
 
-    def analyze_10k(self, company_ticker):
+    async def analyze_10k(self, company_ticker):
         """
         get SEC filings from EDGAR, start with 10k
         """
@@ -82,10 +84,11 @@ class Screener:
         #     print(key)
         # print(filings['filings'][key])
 
-    def synthesize_market_news(self, company_name):
-        self.serper.search(company_name + " market news")
+    def synthesize_market_news(self, company_ticker):
+        news = self.serper.search(f'"company_name"' + " market news")
+        return news
 
-    def analyze_competitors(self, company_name):
+    def analyze_competitors(self, company_ticker):
         pass
 
 
