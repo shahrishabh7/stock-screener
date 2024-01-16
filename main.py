@@ -2,6 +2,7 @@ import os
 import time
 import asyncio
 import json
+from pydantic import BaseModel
 
 import requests
 import pandas as pd
@@ -11,10 +12,18 @@ from serp import SerpService
 from openai_completions import OpenAIService
 
 
+class Article(BaseModel):
+    title: str
+    link: str
+    source: dict
+    date: str
+
+
 class Screener:
 
     def __init__(self):
-        self.serper = SerpService('')
+        self.serper = SerpService(
+            api_key='')
         self.ticker_to_cik = {}
 
         # create request header
@@ -78,9 +87,26 @@ class Screener:
         prompt = ""
         # open_ai_resp = await open_ai.completion(prompt)
 
-    def synthesize_market_news(self, company_ticker):
-        news = self.serper.search(f'"company_name"' + " market news")
-        return news
+    async def synthesize_market_news(self, company_ticker):
+        articles = []
+
+        serp_response = self.serper.search(
+            f'"{company_ticker}"' + " market news")
+        for result in serp_response['news_results'][:4]:
+            articles.append(Article(
+                title=result['title'],
+                link=result['link'],
+                source=result['source'],
+                date=result['date']
+            ))
+
+        # extract page content from articles
+        for article in articles:
+            bs_scraper = BeautifulSoupService(article.link)
+            article.page_content = await bs_scraper.get_page_content()
+            print(article.page_content)
+
+        # pass articles to LLM to summarize and synthesize insights
 
     def analyze_competitors(self, company_ticker):
         pass
@@ -94,7 +120,7 @@ async def main():
             break
 
         filings_analysis = await screener.analyze_10k(user_input)
-        market_analysis = screener.synthesize_market_news(user_input)
+        market_analysis = await screener.synthesize_market_news(user_input)
         competitor_analysis = screener.analyze_competitors(user_input)
 
         print('Company Analysis:')
