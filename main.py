@@ -71,7 +71,6 @@ class Screener:
         sec_link_10k = f'https://www.sec.gov/Archives/edgar/data/{cik}/{most_recent_10k["accessionNumber"].replace("-", "")}/{most_recent_10k["primaryDocument"]}'
         print(sec_link_10k)
         
-        # 
         bs = BeautifulSoupService(sec_link_10k)
         await bs.generate_pdf()
         # print(sec_10k_page_content)
