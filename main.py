@@ -14,7 +14,7 @@ from openai_completions import OpenAIService
 class Screener:
 
     def __init__(self):
-        self.serper = SerpService(os.environ.get("SERP_KEY"))
+        self.serper = SerpService('')
         self.ticker_to_cik = {}
 
         # create request header
@@ -79,10 +79,11 @@ class Screener:
         prompt = ""
         # open_ai_resp = await open_ai.completion(prompt)
 
-    def synthesize_market_news(self, company_name):
-        self.serper.search(company_name + " market news")
+    def synthesize_market_news(self, company_ticker):
+        news = self.serper.search(f'"company_name"' + " market news")
+        return news
 
-    def analyze_competitors(self, company_name):
+    def analyze_competitors(self, company_ticker):
         pass
 
 
