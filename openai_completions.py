@@ -9,7 +9,7 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 
 class OpenAIService:
-    def __init__(self, model: str = "gpt-3.5-turbo", api_key: str = OPENAI_API_KEY):
+    def __init__(self, model: str = "gpt-3.5-turbo", api_key: str = ''):
         self.client = OpenAI()
         self.model = model
         self.headers = {
@@ -17,7 +17,7 @@ class OpenAIService:
             "Authorization": f"Bearer {api_key}"
         }
 
-    async def completion(
+    async def market_analysis_completion(
         self,
         prompt: str,
         temperature: int = 0,
@@ -27,7 +27,7 @@ class OpenAIService:
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant."
+                    "content": "You are an assistant helping me synthesize market news to evaluate the position of a company."
                 },
                 {
                     "role": "user",

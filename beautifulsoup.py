@@ -1,6 +1,7 @@
 import re
 import os
 from typing import List
+from pydantic import BaseModel
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -8,7 +9,13 @@ import pdfkit
 
 load_dotenv()
 
-ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+
+class Article(BaseModel):
+    title: str
+    link: str
+    page_content: str = ""
+    source: dict
+    date: str
 
 
 class BeautifulSoupService:
@@ -25,10 +32,6 @@ class BeautifulSoupService:
             print(f"PDF generated and saved at {self.pdf_path}")
         except Exception as e:
             print(f"PDF generation failed: {e}")
-
-    async def get_page_content(self) -> str:
-        pgraphs = await self.get_article_from_html()
-        return pgraphs
 
     async def get_text_from_sec_html(self) -> str:
         elements = []
@@ -90,3 +93,8 @@ class BeautifulSoupService:
             formatted_elements.append(f"{prefix}{text}")
 
         return "\n".join(formatted_elements)
+
+    @staticmethod
+    def stringify_article(article: Article) -> str:
+        article_string = f"Title: {article.title}\n\nContent:\n{article.page_content}\n\nSource: {article.source}\n\nDate: {article.date}"
+        return article_string
