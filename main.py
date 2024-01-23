@@ -85,9 +85,9 @@ class Screener:
         articles = []
         article_strings = []
 
-        serp_response = self.serper.search(
+        news_response = self.serper.search(
             f'"{company_ticker}"' + " market news")
-        for result in serp_response['news_results'][:4]:
+        for result in news_response['news_results'][:4]:
             articles.append(Article(
                 title=result['title'],
                 link=result['link'],
@@ -102,8 +102,8 @@ class Screener:
 
         open_ai = OpenAIService()
         prompt = "Here are the articles:\n\n" + "\n\n".join(article_strings)
-        response = await open_ai.market_analysis_completion(prompt)
-        return response
+        news_analysis = await open_ai.market_analysis_completion(prompt)
+        return news_analysis
 
     def analyze_competitors(self, company_ticker):
         pass
@@ -118,6 +118,7 @@ async def main():
 
         # filings_analysis = await screener.analyze_10k(user_input)
         market_analysis = await screener.synthesize_market_news(user_input)
+        print(market_analysis)
         # competitor_analysis = screener.analyze_competitors(user_input)
 
         print('Company Analysis:')
