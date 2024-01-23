@@ -2,21 +2,15 @@ import os
 import time
 import asyncio
 import json
+from typing import Optional
 from pydantic import BaseModel
 
 import requests
 import pandas as pd
 
-from beautifulsoup import BeautifulSoupService
+from beautifulsoup import Article, BeautifulSoupService
 from serp import SerpService
 from openai_completions import OpenAIService
-
-
-class Article(BaseModel):
-    title: str
-    link: str
-    source: dict
-    date: str
 
 
 class Screener:
@@ -89,6 +83,7 @@ class Screener:
 
     async def synthesize_market_news(self, company_ticker):
         articles = []
+        article_strings = []
 
         serp_response = self.serper.search(
             f'"{company_ticker}"' + " market news")
@@ -100,13 +95,15 @@ class Screener:
                 date=result['date']
             ))
 
-        # extract page content from articles
         for article in articles:
             bs_scraper = BeautifulSoupService(article.link)
-            article.page_content = await bs_scraper.get_page_content()
-            print(article.page_content)
+            article.page_content = await bs_scraper.get_article_from_html()
+            article_strings.append(bs_scraper.stringify_article(article))
 
-        # pass articles to LLM to summarize and synthesize insights
+        open_ai = OpenAIService()
+        prompt = "Here are the articles:\n\n" + "\n\n".join(article_strings)
+        response = await open_ai.market_analysis_completion(prompt)
+        return response
 
     def analyze_competitors(self, company_ticker):
         pass
@@ -119,9 +116,9 @@ async def main():
         if user_input.lower() == 'exit':
             break
 
-        filings_analysis = await screener.analyze_10k(user_input)
+        # filings_analysis = await screener.analyze_10k(user_input)
         market_analysis = await screener.synthesize_market_news(user_input)
-        competitor_analysis = screener.analyze_competitors(user_input)
+        # competitor_analysis = screener.analyze_competitors(user_input)
 
         print('Company Analysis:')
 
