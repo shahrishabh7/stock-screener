@@ -102,8 +102,8 @@ class Screener:
 
         open_ai = OpenAIService()
         prompt = "Here are the articles:\n\n" + "\n\n".join(article_strings)
-        response = await open_ai.market_analysis_completion(prompt)
-        return response['choices'][0]['message']['content']
+        news_analysis = await open_ai.market_analysis_completion(prompt)
+        return news_analysis
 
     def analyze_competitors(self, company_ticker):
         pass
@@ -119,7 +119,7 @@ async def main():
         # filings_analysis = await screener.analyze_10k(user_input)
         market_analysis = await screener.synthesize_market_news(user_input)
         print(market_analysis)
-        competitor_analysis = screener.analyze_competitors(user_input)
+        # competitor_analysis = screener.analyze_competitors(user_input)
 
         print('Company Analysis:')
 
