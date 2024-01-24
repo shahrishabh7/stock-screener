@@ -105,8 +105,30 @@ class Screener:
         news_analysis = await open_ai.market_analysis_completion(prompt)
         return news_analysis
 
-    def analyze_competitors(self, company_ticker):
-        pass
+    async def analyze_competitors(self, company_ticker):
+        articles = []
+        article_strings = []
+
+        news_response = self.serper.search(
+            f'"{company_ticker}"' + " competitors news")
+        for result in news_response['news_results'][:2]:
+            articles.append(Article(
+                title=result['title'],
+                link=result['link'],
+                source=result['source'],
+                date=result['date']
+            ))
+
+        for article in articles:
+            bs_scraper = BeautifulSoupService(article.link)
+            article.page_content = await bs_scraper.get_article_from_html()
+            article_strings.append(bs_scraper.stringify_article(article))
+
+        open_ai = OpenAIService()
+        prompt = f"Based on articles on {company_ticker} below, extract and highlights insights on the competitors and their relative performance:\n\n" + \
+            "\n\n".join(article_strings)
+        competitor_analysis = await open_ai.competitor_analysis_completion(prompt)
+        return competitor_analysis
 
 
 async def main():
@@ -117,9 +139,9 @@ async def main():
             break
 
         # filings_analysis = await screener.analyze_10k(user_input)
-        market_analysis = await screener.synthesize_market_news(user_input)
-        print(market_analysis)
-        # competitor_analysis = screener.analyze_competitors(user_input)
+        # market_analysis = await screener.synthesize_market_news(user_input)
+        competitor_analysis = await screener.analyze_competitors(user_input)
+        print(competitor_analysis)
 
         print('Company Analysis:')
 
