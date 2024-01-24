@@ -5,9 +5,9 @@ from serpapi import search as GoogleSearch
 class SerpService:
     def __init__(self, api_key: Optional[str], engine: str = "google_news"):
         self.url = "https://serpapi.com/search"
-        self.api_key = api_key
+        self.api_key = ''
         self.params = {
-            "api_key": {api_key},
+            "api_key": {''},
             "gl": "us",
         }
         if engine:

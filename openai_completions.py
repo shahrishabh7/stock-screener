@@ -2,44 +2,39 @@ from typing import Any, Optional
 import requests
 import os
 
-from openai import OpenAI
+from helicone.openai_async import openai
 from pydantic import BaseModel
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+HELICONE_API_KEY = os.getenv('HELICONE_API_KEY')
 
 
 class OpenAIService:
-    def __init__(self, model: str = "gpt-3.5-turbo", api_key: str = OPENAI_API_KEY):
-        self.client = OpenAI()
+    def __init__(self, model: str = "gpt-3.5-turbo", api_key: str = ''):
         self.model = model
+        self.api_key = api_key
         self.headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
+            "Authorization": f"Bearer {api_key}",
+            "Helicone-Auth": f"Bearer {HELICONE_API_KEY}",
         }
 
-    async def completion(
+    async def market_analysis_completion(
         self,
         prompt: str,
         temperature: int = 0,
     ) -> str:
-        data = {
-            "model": self.model,
-            "messages": [
+        response = openai.ChatCompletion.create(
+            model=self.model,
+            messages=[{
+                "role": "system",
+                "content": "You are an assistant helping me synthesize market news to evaluate the position of a company"
+            },
                 {
-                    "role": "system",
-                    "content": "You are a helpful assistant."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            "temperature": temperature,
-        }
-
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            json=data,
-            headers=self.headers
+                "role": "user",
+                "content": prompt
+            }],
+            max_tokens=512,
+            temperature=temperature,
         )
-        return response.json()
+        return response['choices'][0]['message']['content']

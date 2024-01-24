@@ -2,11 +2,13 @@ import os
 import time
 import asyncio
 import json
+from typing import Optional
+from pydantic import BaseModel
 
 import requests
 import pandas as pd
 
-from beautifulsoup import BeautifulSoupService
+from beautifulsoup import Article, BeautifulSoupService
 from serp import SerpService
 from openai_completions import OpenAIService
 
@@ -14,7 +16,8 @@ from openai_completions import OpenAIService
 class Screener:
 
     def __init__(self):
-        self.serper = SerpService('')
+        self.serper = SerpService(
+            api_key='')
         self.ticker_to_cik = {}
 
         # create request header
@@ -79,9 +82,29 @@ class Screener:
         prompt = ""
         # open_ai_resp = await open_ai.completion(prompt)
 
-    def synthesize_market_news(self, company_ticker):
-        news = self.serper.search(f'"company_name"' + " market news")
-        return news
+    async def synthesize_market_news(self, company_ticker):
+        articles = []
+        article_strings = []
+
+        news_response = self.serper.search(
+            f'"{company_ticker}"' + " market news")
+        for result in news_response['news_results'][:4]:
+            articles.append(Article(
+                title=result['title'],
+                link=result['link'],
+                source=result['source'],
+                date=result['date']
+            ))
+
+        for article in articles:
+            bs_scraper = BeautifulSoupService(article.link)
+            article.page_content = await bs_scraper.get_article_from_html()
+            article_strings.append(bs_scraper.stringify_article(article))
+
+        open_ai = OpenAIService()
+        prompt = "Here are the articles:\n\n" + "\n\n".join(article_strings)
+        news_analysis = await open_ai.market_analysis_completion(prompt)
+        return news_analysis
 
     def analyze_competitors(self, company_ticker):
         pass
@@ -94,9 +117,10 @@ async def main():
         if user_input.lower() == 'exit':
             break
 
-        filings_analysis = await screener.analyze_10k(user_input)
-        market_analysis = screener.synthesize_market_news(user_input)
-        competitor_analysis = screener.analyze_competitors(user_input)
+        # filings_analysis = await screener.analyze_10k(user_input)
+        market_analysis = await screener.synthesize_market_news(user_input)
+        print(market_analysis)
+        # competitor_analysis = screener.analyze_competitors(user_input)
 
         print('Company Analysis:')
 
