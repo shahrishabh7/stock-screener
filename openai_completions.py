@@ -38,3 +38,23 @@ class OpenAIService:
             temperature=temperature,
         )
         return response['choices'][0]['message']['content']
+
+    async def filings_analysis_completion(
+        self,
+        prompt: str,
+        temperature: int = 0,
+    ) -> str:
+        response = openai.ChatCompletion.create(
+            model=self.model,
+            messages=[{
+                "role": "system",
+                "content": "You are an assistant helping me synthesize SEC filings to evaluate the position of a company"
+            },
+                {
+                "role": "user",
+                "content": prompt
+            }],
+            max_tokens=512,
+            temperature=temperature,
+        )
+        return response['choices'][0]['message']['content']

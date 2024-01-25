@@ -12,6 +12,8 @@ from beautifulsoup import Article, BeautifulSoupService
 from serp import SerpService
 from openai_completions import OpenAIService
 
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 
 class Screener:
 
@@ -71,16 +73,29 @@ class Screener:
 
         assert most_recent_10k is not None
         # https://www.sec.gov/Archives/edgar/data/1321655/000132165523000011/pltr-20221231.htm
-        print(most_recent_10k)
+        # print(most_recent_10k)
         sec_link_10k = f'https://www.sec.gov/Archives/edgar/data/{cik}/{most_recent_10k["accessionNumber"].replace("-", "")}/{most_recent_10k["primaryDocument"]}'
-        print(sec_link_10k)
+        print(f"link: {sec_link_10k}")
         
         bs = BeautifulSoupService(sec_link_10k)
-        await bs.generate_pdf()
+        sec_filing_text = await bs.get_text_from_sec_html()
+        print(sec_filing_text)
         # print(sec_10k_page_content)
-        open_ai = OpenAIService()
-        prompt = ""
-        # open_ai_resp = await open_ai.completion(prompt)
+        # open_ai = OpenAIService()
+        prompt = f"Here is the most recent 10K filing:\n\n \n\n {sec_filing_text} \n\n Please identify which line numbers have relevant content for predicting the success of this company's stock price"
+        device = "cuda" # the device to load the model onto
+
+        model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-v0.1")
+        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-v0.1")
+
+        model_inputs = tokenizer([prompt], return_tensors="pt").to(device)
+        model.to(device)
+
+        generated_ids = model.generate(**model_inputs, do_sample=True)
+        return tokenizer.batch_decode(generated_ids)[0]
+
+        # return await open_ai.filings_analysis_completion(prompt)
+        # return None
 
     async def synthesize_market_news(self, company_ticker):
         articles = []
@@ -117,9 +132,9 @@ async def main():
         if user_input.lower() == 'exit':
             break
 
-        # filings_analysis = await screener.analyze_10k(user_input)
-        market_analysis = await screener.synthesize_market_news(user_input)
-        print(market_analysis)
+        filings_analysis = await screener.analyze_10k(user_input)
+        # market_analysis = await screener.synthesize_market_news(user_input)
+        print(filings_analysis)
         # competitor_analysis = screener.analyze_competitors(user_input)
 
         print('Company Analysis:')

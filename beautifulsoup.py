@@ -56,6 +56,11 @@ class BeautifulSoupService:
         for i, element in enumerate(elements):
             # remove extra whitespaces \s+ matches multiple spaces in a row
             text = re.sub(r"\s+", " ", element.text).strip()
+
+            # prune lines with less than 10 chars
+            if len(text) < 10:
+                continue
+
             prefix = f"{i + 1}. "
             formatted_elements.append(f"{prefix}{text}")
 
