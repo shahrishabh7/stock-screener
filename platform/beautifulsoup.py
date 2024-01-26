@@ -19,7 +19,7 @@ class Article(BaseModel):
 
 
 class BeautifulSoupService:
-    def __init__(self, url: str, generate_content: bool =  False):
+    def __init__(self, url: str, generate_content: bool = False):
         self.headers = {'User-Agent': "rohith.mandavilli@gmail.com"}
         self.pdf_path = "10k.pdf"
 

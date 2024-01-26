@@ -1,26 +1,21 @@
-import os
-import time
-import asyncio
-import json
-from typing import Optional
-from pydantic import BaseModel
-
-import requests
+from typing import Dict, Optional
 import pandas as pd
-
+from pydantic import BaseModel
+import requests
 from beautifulsoup import Article, BeautifulSoupService
-from serp import SerpService
 from openai_completions import OpenAIService
+from serp import SerpService
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 class Screener:
 
-    def __init__(self):
+    def __init__(self, ticker: str):
         self.serper = SerpService(
             api_key='')
         self.ticker_to_cik = {}
+        self.ticker = ticker
 
         # create request header
         self.headers = {'User-Agent': "rohith.mandavilli@gmail.com"}
@@ -40,16 +35,27 @@ class Screener:
             self.ticker_to_cik[company['ticker']
                                ] = leading_zeros + str(cik_str)
 
+        assert self.ticker in self.ticker_to_cik, "TICKER DOESNT EXIST"
         print("...retrieved company data...")
 
-    async def analyze_10k(self, company_ticker):
+    async def analyze_all(self) -> Dict[str, str]:
+        # filings_analysis = await self.analyze_10k()
+        market_analysis = await self.synthesize_market_news()
+        competitor_analysis = await self.analyze_competitors()
+
+        return {
+            "filings_analysis": "filings_analysis",
+            "market_analysis": market_analysis,
+            "competitor_analysis": competitor_analysis
+        }
+
+    async def analyze_10k(self):
         """
         get SEC filings from EDGAR, start with 10k
         """
 
         # get company specific filing metadata
-        assert company_ticker in self.ticker_to_cik, "TICKER DOESNT EXIST"
-        cik = self.ticker_to_cik[company_ticker]
+        cik = self.ticker_to_cik[self.ticker]
         filing_metadata_response = requests.get(
             f'https://data.sec.gov/submissions/CIK{cik}.json',
             headers=self.headers
@@ -75,8 +81,8 @@ class Screener:
         # https://www.sec.gov/Archives/edgar/data/1321655/000132165523000011/pltr-20221231.htm
         # print(most_recent_10k)
         sec_link_10k = f'https://www.sec.gov/Archives/edgar/data/{cik}/{most_recent_10k["accessionNumber"].replace("-", "")}/{most_recent_10k["primaryDocument"]}'
-        print(f"link: {sec_link_10k}")
-        
+        print(sec_link_10k)
+
         bs = BeautifulSoupService(sec_link_10k)
         sec_filing_text = await bs.get_text_from_sec_html()
         print(sec_filing_text)
@@ -97,13 +103,47 @@ class Screener:
         # return await open_ai.filings_analysis_completion(prompt)
         # return None
 
-    async def synthesize_market_news(self, company_ticker):
+    async def synthesize_market_news(self):
         articles = []
         article_strings = []
 
         news_response = self.serper.search(
-            f'"{company_ticker}"' + " market news")
+            f'"{self.ticker}"' + " market news")
+
         for result in news_response['news_results'][:4]:
+            if 'stories' in result:
+                for story in result['stories']:
+                    articles.append(Article(
+                        title=story['title'],
+                        link=story['link'],
+                        source=story['source'],
+                        date=story['date']
+                    ))
+            else:
+                articles.append(Article(
+                    title=result['title'],
+                    link=result['link'],
+                    source=result['source'],
+                    date=result['date']
+                ))
+
+        for article in articles:
+            bs_scraper = BeautifulSoupService(article.link)
+            article.page_content = await bs_scraper.get_article_from_html()
+            article_strings.append(bs_scraper.stringify_article(article))
+
+        open_ai = OpenAIService()
+        prompt = "Here are the articles:\n\n" + "\n\n".join(article_strings)
+        news_analysis = await open_ai.market_analysis_completion(prompt)
+        return news_analysis
+
+    async def analyze_competitors(self):
+        articles = []
+        article_strings = []
+
+        news_response = self.serper.search(
+            f'"{self.ticker}"' + " competitors news")
+        for result in news_response['news_results'][:2]:
             articles.append(Article(
                 title=result['title'],
                 link=result['link'],
@@ -117,28 +157,7 @@ class Screener:
             article_strings.append(bs_scraper.stringify_article(article))
 
         open_ai = OpenAIService()
-        prompt = "Here are the articles:\n\n" + "\n\n".join(article_strings)
-        news_analysis = await open_ai.market_analysis_completion(prompt)
-        return news_analysis
-
-    def analyze_competitors(self, company_ticker):
-        pass
-
-
-async def main():
-    screener = Screener()
-    while True:
-        user_input = input("Enter company ticker: ")
-        if user_input.lower() == 'exit':
-            break
-
-        filings_analysis = await screener.analyze_10k(user_input)
-        # market_analysis = await screener.synthesize_market_news(user_input)
-        print(filings_analysis)
-        # competitor_analysis = screener.analyze_competitors(user_input)
-
-        print('Company Analysis:')
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
+        prompt = f"Based on articles on {self.ticker} below, extract and highlights insights on the competitors and their relative performance:\n\n" + \
+            "\n\n".join(article_strings)
+        competitor_analysis = await open_ai.competitor_analysis_completion(prompt)
+        return competitor_analysis

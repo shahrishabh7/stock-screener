@@ -10,7 +10,7 @@ HELICONE_API_KEY = os.getenv('HELICONE_API_KEY')
 
 
 class OpenAIService:
-    def __init__(self, model: str = "gpt-3.5-turbo", api_key: str = ''):
+    def __init__(self, model: str = "gpt-3.5-turbo-16k", api_key: str = ''):
         self.model = model
         self.api_key = api_key
         self.headers = {
@@ -39,7 +39,7 @@ class OpenAIService:
         )
         return response['choices'][0]['message']['content']
 
-    async def filings_analysis_completion(
+    async def competitor_analysis_completion(
         self,
         prompt: str,
         temperature: int = 0,
@@ -48,7 +48,7 @@ class OpenAIService:
             model=self.model,
             messages=[{
                 "role": "system",
-                "content": "You are an assistant helping me synthesize SEC filings to evaluate the position of a company"
+                "content": "You are an assistant helping me synthesize insights on a company's competitors and how their stock is performing."
             },
                 {
                 "role": "user",

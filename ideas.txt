@@ -4,3 +4,11 @@ What do we think about when decide whether to invest in a stock?
 - Market analysis - interest, macro backdrop, unemployement
 - Industry analysis - growth trajectory, market size
 - Competitor analysis - texture of competitors (mostly private? how large are they?), competitive advantages
+
+
+SEC filings common sections
+ - Business
+ - Risk Factors
+ - Legal proceedings
+ - Management's Discussion and Analysis of Financial Condition and Results of Operations
+ - Quantitative and Qualitative Disclosures about Market Risk
