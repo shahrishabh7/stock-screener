@@ -1,11 +1,8 @@
 import re
-import os
-from typing import List
 from pydantic import BaseModel
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-import pdfkit
 
 load_dotenv()
 
@@ -33,13 +30,6 @@ class BeautifulSoupService:
             assert page.status_code, 200
             self.page_content = page.content
             self.html = BeautifulSoup(self.page_content, "html.parser")
-
-    async def generate_pdf(self) -> None:
-        try:
-            pdfkit.from_url(url, self.pdf_path)
-            print(f"PDF generated and saved at {self.pdf_path}")
-        except Exception as e:
-            print(f"PDF generation failed: {e}")
 
     async def get_text_from_sec_html(self) -> str:
         elements = []
