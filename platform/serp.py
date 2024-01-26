@@ -1,13 +1,15 @@
+import os
 from typing import Optional, Any, Dict
 from serpapi import search as GoogleSearch
 
+SERP_API_KEY = os.getenv('SERP_API_KEY')
 
 class SerpService:
     def __init__(self, api_key: Optional[str], engine: str = "google_news"):
         self.url = "https://serpapi.com/search"
-        self.api_key = ''
+        self.api_key = SERP_API_KEY
         self.params = {
-            "api_key": {''},
+            "api_key": {self.api_key},
             "gl": "us",
         }
         if engine:

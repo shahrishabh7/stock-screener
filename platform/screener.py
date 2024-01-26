@@ -39,12 +39,12 @@ class Screener:
         print("...retrieved company data...")
 
     async def analyze_all(self) -> Dict[str, str]:
-        # filings_analysis = await self.analyze_10k()
+        filings_analysis = await self.analyze_10k()
         market_analysis = await self.synthesize_market_news()
         competitor_analysis = await self.analyze_competitors()
 
         return {
-            "filings_analysis": "filings_analysis",
+            "filings_analysis": filings_analysis,
             "market_analysis": market_analysis,
             "competitor_analysis": competitor_analysis
         }
@@ -62,13 +62,6 @@ class Screener:
         )
         filings = filing_metadata_response.json()
 
-        # review json
-        print(filings.keys())
-        print(filings['filings'].keys())
-        print(filings['filings']['recent'].keys())
-        # dict_keys(['cik', 'entityType', 'sic', 'sicDescription', 'insiderTransactionForOwnerExists', 'insiderTransactionForIssuerExists', 'name', 'tickers', 'exchanges', 'ein', 'description', 'website', 'investorWebsite', 'category', 'fiscalYearEnd', 'stateOfIncorporation', 'stateOfIncorporationDescription', 'addresses', 'phone', 'flags', 'formerNames', 'filings'])
-        # dict_keys(['recent', 'files'])
-        # dict_keys(['accessionNumber', 'filingDate', 'reportDate', 'acceptanceDateTime', 'act', 'form', 'fileNumber', 'filmNumber', 'items', 'size', 'isXBRL', 'isInlineXBRL', 'primaryDocument', 'primaryDocDescription'])
         forms = pd.DataFrame.from_dict(filings['filings']['recent'])
         most_recent_10k = None
         for index, row in forms.iterrows():
@@ -78,30 +71,22 @@ class Screener:
                 break
 
         assert most_recent_10k is not None
-        # https://www.sec.gov/Archives/edgar/data/1321655/000132165523000011/pltr-20221231.htm
-        # print(most_recent_10k)
         sec_link_10k = f'https://www.sec.gov/Archives/edgar/data/{cik}/{most_recent_10k["accessionNumber"].replace("-", "")}/{most_recent_10k["primaryDocument"]}'
         print(sec_link_10k)
 
         bs = BeautifulSoupService(sec_link_10k)
         sec_filing_text = await bs.get_text_from_sec_html()
-        print(sec_filing_text)
-        # print(sec_10k_page_content)
-        # open_ai = OpenAIService()
-        prompt = f"Here is the most recent 10K filing:\n\n \n\n {sec_filing_text} \n\n Please identify which line numbers have relevant content for predicting the success of this company's stock price"
-        device = "cuda" # the device to load the model onto
 
-        model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-v0.1")
-        tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-v0.1")
+        mgmt_disc_index = sec_filing_text.index("ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS")
+        fin_statements_index = sec_filing_text.index("ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA")
 
-        model_inputs = tokenizer([prompt], return_tensors="pt").to(device)
-        model.to(device)
+        filtered_sec_content = sec_filing_text[mgmt_disc_index: fin_statements_index]
+        open_ai = OpenAIService()
+        prompt = f"Please summarize this piece of filtered content from {self.ticker} most recent 10K filing:\n\n ************** \n\n {filtered_sec_content} \n*********\n\n"
 
-        generated_ids = model.generate(**model_inputs, do_sample=True)
-        return tokenizer.batch_decode(generated_ids)[0]
+        filings_analysis = await open_ai.competitor_analysis_completion(prompt)
+        return filings_analysis
 
-        # return await open_ai.filings_analysis_completion(prompt)
-        # return None
 
     async def synthesize_market_news(self):
         articles = []

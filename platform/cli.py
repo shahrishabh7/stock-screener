@@ -20,17 +20,20 @@ async def main():
             break
 
         screener = Screener(ticker=user_input)
-        # filings_analysis = await screener.analyze_10k(user_input)
-        market_analysis = await screener.synthesize_market_news()
-        competitor_analysis = await screener.analyze_competitors()
+        # filings_analysis = await screener.analyze_10k()
+        # market_analysis = await screener.synthesize_market_news()
+        # competitor_analysis = await screener.analyze_competitors()
+        print("Filings Analysis")
+        print("---------------")
+        print("filings_analysis")
 
         print("Market Analysis")
         print("---------------")
-        print(market_analysis)
+        print("market_analysis")
 
         print("Competitor Analysis")
         print("---------------")
-        print(competitor_analysis)
+        print("competitor_analysis")
 
 
 if __name__ == '__main__':
