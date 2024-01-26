@@ -1,6 +1,9 @@
+from typing import Dict
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+from screener import Screener
 
 app = FastAPI()
 
@@ -27,5 +30,6 @@ def read_root():
 
 
 @app.post("/ticker")
-def execute_analysis(req_body: CompanyInformation):
-    return {"ticker": req_body.ticker}
+async def execute_analysis(req_body: CompanyInformation) -> Dict[str, str]:
+    screener = Screener(ticker=req_body.ticker)
+    return await screener.analyze_all()
