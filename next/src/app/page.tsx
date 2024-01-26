@@ -1,12 +1,25 @@
+"use client";
 import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
-
+import { useState } from "react";
 import { CreatePost } from "~/app/_components/create-post";
 import { api } from "~/trpc/server";
 
-export default async function Home() {
+export default function Home() {
   noStore();
-  const hello = await api.post.hello.query({ text: "from tRPC" });
+  const [ticker, setTicker] = useState("");
+
+  const submitTicker = async () => {
+    const res = await fetch(`http://localhost:8000/ticker`, {
+      method: "POST",
+      body: JSON.stringify({ ticker }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await res.json();
+    console.log(data);
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
@@ -20,9 +33,10 @@ export default async function Home() {
           <input
             type="text"
             placeholder="e.g., AAPL"
-            className="w-full max-w-xs rounded-md bg-white p-2 text-black shadow-sm focus:ring focus:ring-[hsl(280,100%,70%)] focus:ring-opacity-50" // Tailwind classes
+            className="w-full max-w-xs rounded-md bg-white p-2 text-black shadow-sm focus:ring focus:ring-[hsl(280,100%,70%)] focus:ring-opacity-50"
+            onChange={(e) => setTicker(e.target.value)}
           />
-          <button>Submit</button>
+          <button onClick={submitTicker}>Submit</button>
         </div>
       </div>
     </main>
