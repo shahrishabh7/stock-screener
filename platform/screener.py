@@ -77,8 +77,10 @@ class Screener:
         bs = BeautifulSoupService(sec_link_10k)
         sec_filing_text = await bs.get_text_from_sec_html()
 
-        mgmt_disc_index = sec_filing_text.index("ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS")
-        fin_statements_index = sec_filing_text.index("ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA")
+        mgmt_disc_index = sec_filing_text.index(
+            "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS")
+        fin_statements_index = sec_filing_text.index(
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA")
 
         filtered_sec_content = sec_filing_text[mgmt_disc_index: fin_statements_index]
         open_ai = OpenAIService()
@@ -86,7 +88,6 @@ class Screener:
 
         filings_analysis = await open_ai.filings_analysis_completion(prompt)
         return filings_analysis
-
 
     async def synthesize_market_news(self):
         articles = []
