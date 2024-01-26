@@ -14,18 +14,23 @@ from openai_completions import OpenAIService
 
 
 async def main():
-    screener = Screener()
     while True:
         user_input = input("Enter company ticker: ")
         if user_input.lower() == 'exit':
             break
 
+        screener = Screener(ticker=user_input)
         # filings_analysis = await screener.analyze_10k(user_input)
-        # market_analysis = await screener.synthesize_market_news(user_input)
-        competitor_analysis = await screener.analyze_competitors(user_input)
-        print(competitor_analysis)
+        market_analysis = await screener.synthesize_market_news()
+        competitor_analysis = await screener.analyze_competitors()
 
-        print('Company Analysis:')
+        print("Market Analysis")
+        print("---------------")
+        print(market_analysis)
+
+        print("Competitor Analysis")
+        print("---------------")
+        print(competitor_analysis)
 
 
 if __name__ == '__main__':
