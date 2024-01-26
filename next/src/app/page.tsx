@@ -1,4 +1,5 @@
 "use client";
+import { useMutation } from "react-query";
 import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { useState } from "react";
@@ -9,17 +10,31 @@ export default function Home() {
   noStore();
   const [ticker, setTicker] = useState("");
 
-  const submitTicker = async () => {
-    const res = await fetch(`http://localhost:8000/ticker`, {
+  const mutation = useMutation((newTicker) => {
+    return fetch(`http://localhost:8000/ticker`, {
       method: "POST",
-      body: JSON.stringify({ ticker }),
+      body: JSON.stringify(newTicker),
       headers: {
         "Content-Type": "application/json",
       },
-    });
-    const data = await res.json();
-    console.log(data);
+    }).then((res) => res.json());
+  });
+
+  const submitTicker = () => {
+    mutation.mutate({ ticker });
   };
+
+  // const submitTicker = async () => {
+  //   const res = await fetch(`http://localhost:8000/ticker`, {
+  //     method: "POST",
+  //     body: JSON.stringify({ ticker }),
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   });
+  //   const data = await res.json();
+  //   console.log(data);
+  // };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
@@ -37,6 +52,16 @@ export default function Home() {
             onChange={(e) => setTicker(e.target.value)}
           />
           <button onClick={submitTicker}>Submit</button>
+          {mutation.isLoading ? (
+            <div>Submitting...</div>
+          ) : (
+            <>
+              {mutation.isError ? (
+                <div>An error occurred: {mutation.error.message}</div>
+              ) : null}
+              {mutation.isSuccess ? <div>Submitted successfully!</div> : null}
+            </>
+          )}
         </div>
       </div>
     </main>
