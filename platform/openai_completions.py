@@ -10,7 +10,7 @@ HELICONE_API_KEY = os.getenv('HELICONE_API_KEY')
 
 
 class OpenAIService:
-    def __init__(self, model: str = "gpt-3.5-turbo", api_key: str = ''):
+    def __init__(self, model: str = "gpt-3.5-turbo-16k", api_key: str = ''):
         self.model = model
         self.api_key = api_key
         self.headers = {

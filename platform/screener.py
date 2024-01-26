@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Optional
 import pandas as pd
 from pydantic import BaseModel
 import requests
@@ -35,6 +35,17 @@ class Screener:
 
         assert self.ticker in self.ticker_to_cik, "TICKER DOESNT EXIST"
         print("...retrieved company data...")
+
+    async def analyze_all(self) -> Dict[str, str]:
+        # filings_analysis = await self.analyze_10k()
+        market_analysis = await self.synthesize_market_news()
+        competitor_analysis = await self.analyze_competitors()
+
+        return {
+            "filings_analysis": "filings_analysis",
+            "market_analysis": market_analysis,
+            "competitor_analysis": competitor_analysis
+        }
 
     async def analyze_10k(self):
         """
@@ -83,13 +94,23 @@ class Screener:
 
         news_response = self.serper.search(
             f'"{self.ticker}"' + " market news")
+
         for result in news_response['news_results'][:4]:
-            articles.append(Article(
-                title=result['title'],
-                link=result['link'],
-                source=result['source'],
-                date=result['date']
-            ))
+            if 'stories' in result:
+                for story in result['stories']:
+                    articles.append(Article(
+                        title=story['title'],
+                        link=story['link'],
+                        source=story['source'],
+                        date=story['date']
+                    ))
+            else:
+                articles.append(Article(
+                    title=result['title'],
+                    link=result['link'],
+                    source=result['source'],
+                    date=result['date']
+                ))
 
         for article in articles:
             bs_scraper = BeautifulSoupService(article.link)
