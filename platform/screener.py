@@ -84,7 +84,7 @@ class Screener:
         open_ai = OpenAIService()
         prompt = f"Please summarize this piece of filtered content from {self.ticker} most recent 10K filing:\n\n ************** \n\n {filtered_sec_content} \n*********\n\n"
 
-        filings_analysis = await open_ai.competitor_analysis_completion(prompt)
+        filings_analysis = await open_ai.filings_analysis_completion(prompt)
         return filings_analysis
 
 
