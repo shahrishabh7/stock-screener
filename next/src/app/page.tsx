@@ -18,12 +18,13 @@ export default function Home() {
   noStore();
   const [ticker, setTicker] = useState("");
   const [tickerAnalysis, setTickerAnalysis] = useState(null);
+  console.log("tickerAnalysis", tickerAnalysis);
 
   const mutation = useMutation(
     ({ ticker }) => {
       return fetch(`http://localhost:8000/ticker`, {
         method: "POST",
-        body: JSON.stringify({ ticker }), // Ensure the body is structured correctly
+        body: JSON.stringify({ ticker }),
         headers: {
           "Content-Type": "application/json",
         },
