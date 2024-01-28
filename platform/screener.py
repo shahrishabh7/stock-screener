@@ -39,12 +39,12 @@ class Screener:
         print("...retrieved company data...")
 
     async def analyze_all(self) -> Dict[str, str]:
-        filings_analysis = await self.analyze_10k()
+        # filings_analysis = await self.analyze_10k()
         market_analysis = await self.synthesize_market_news()
         competitor_analysis = await self.analyze_competitors()
 
         return {
-            "filings_analysis": filings_analysis,
+            "filings_analysis": 'filings_analysis',
             "market_analysis": market_analysis,
             "competitor_analysis": competitor_analysis
         }

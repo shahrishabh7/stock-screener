@@ -4,6 +4,7 @@ from serpapi import search as GoogleSearch
 
 SERP_API_KEY = os.getenv('SERP_API_KEY')
 
+
 class SerpService:
     def __init__(self, api_key: Optional[str], engine: str = "google_news"):
         self.url = "https://serpapi.com/search"

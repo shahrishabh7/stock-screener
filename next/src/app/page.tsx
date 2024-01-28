@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { unstable_noStore as noStore } from "next/cache";
 import { useState } from "react";
+import { formatHeader } from "~/utils/headingFormatter";
 
 const queryClient = new QueryClient();
 
@@ -18,11 +19,10 @@ export default function Home() {
   noStore();
   const [ticker, setTicker] = useState("");
   const [tickerAnalysis, setTickerAnalysis] = useState(null);
-  console.log("tickerAnalysis", tickerAnalysis);
 
   const mutation = useMutation(
     ({ ticker }) => {
-      return fetch(`http://localhost:8000/ticker`, {
+      return fetch(`http://localhost:8000/mock/ticker`, {
         method: "POST",
         body: JSON.stringify({ ticker }),
         headers: {
@@ -47,21 +47,28 @@ export default function Home() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+      <main className="bg--w flex min-h-screen flex-col items-center justify-center text-white">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Stock <span className="text-[hsl(280,100%,70%)]">Screener</span>
+          <h1 className="text-5xl font-extrabold tracking-tight text-black sm:text-[5rem]">
+            Stock <span className="text-[hsl(284,7%,71%)]">Screener</span>
           </h1>
           <div className="flex flex-col items-center gap-2"></div>
           <div className="flex flex-col items-center gap-2">
-            <div className="text-lg font-medium">Enter a company ticker:</div>
+            <div className="text-lg font-medium text-black">
+              Enter a company ticker:
+            </div>
             <input
               type="text"
               placeholder="e.g., AAPL"
-              className="w-full max-w-xs rounded-md bg-white p-2 text-black shadow-sm focus:ring focus:ring-[hsl(280,100%,70%)] focus:ring-opacity-50"
+              className="focus:black w-full	 max-w-xs rounded-md bg-gray-200 p-2 text-black shadow-sm focus:ring focus:ring-opacity-50"
               onChange={(e) => setTicker(e.target.value)}
             />
-            <button onClick={submitTicker}>Submit</button>
+            <button
+              className="my-2 rounded-lg bg-gray-200 px-4 py-2 text-black"
+              onClick={submitTicker}
+            >
+              Submit
+            </button>
             {mutation.isLoading ? (
               <div>Loading...</div>
             ) : (
@@ -73,15 +80,19 @@ export default function Home() {
               </>
             )}
           </div>
-          {tickerAnalysis &&
-            Object.entries(tickerAnalysis as TickerAnalysis).map(
-              ([key, value]) => (
-                <div key={key}>
-                  <h2 className="mt-4 text-xl font-bold">{key}</h2>
-                  <p>{value.toString()}</p>{" "}
-                </div>
-              ),
-            )}
+          <div className="text-left">
+            {tickerAnalysis &&
+              Object.entries(tickerAnalysis as TickerAnalysis).map(
+                ([key, value]) => (
+                  <div key={key}>
+                    <h2 className="mt-4 text-xl font-bold text-black">
+                      {formatHeader(key)}
+                    </h2>
+                    <p className="text-gray-700">{value.toString()}</p>{" "}
+                  </div>
+                ),
+              )}
+          </div>
         </div>
       </main>
     </QueryClientProvider>
